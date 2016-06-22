@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -23,6 +24,8 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         mDeviceList = new ArrayList<>();
         ListView mListView = (ListView) findViewById(R.id.lv_paired);
@@ -117,12 +120,15 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     @Override
     protected void onStart() {
         super.onStart();
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothAdapter.startDiscovery();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+    }
+
+    public void restartDiscovering(View view) {
+        bluetoothAdapter.startDiscovery();
     }
 }
