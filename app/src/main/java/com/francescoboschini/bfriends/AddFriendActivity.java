@@ -75,6 +75,7 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     @Override
     public void onDiscoveryStarted() {
         showToast("DISCOVERY STARTED");
+        mDeviceList.clear();
     }
 
     @Override
