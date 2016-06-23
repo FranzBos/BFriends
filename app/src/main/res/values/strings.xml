@@ -93,4 +93,5 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="refresh">REFRESH</string>
+    <string name="title_activity_friends">FriendsActivity</string>
 </resources>

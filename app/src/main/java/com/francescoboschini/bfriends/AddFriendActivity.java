@@ -44,8 +44,6 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
         mAdapter.setListener(this);
         mListView.setAdapter(mAdapter);
 
-        RealmResults<FriendDevice> friends = realm.where(FriendDevice.class).findAll();
-
         registerReceiver(service, getDiscoveryIntentFilter());
         registerReceiver(service, getPairingIntentFilter());
     }

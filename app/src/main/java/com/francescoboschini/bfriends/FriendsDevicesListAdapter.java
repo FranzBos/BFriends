@@ -1,33 +1,23 @@
 package com.francescoboschini.bfriends;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.TextView;
-
-import java.util.List;
-
 import io.realm.RealmResults;
 
-public class DeviceListAdapter extends BaseAdapter {
+public class FriendsDevicesListAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
-    private List<BluetoothDevice> mData;
-    private OnPairButtonClickListener mListener;
+    private RealmResults<FriendDevice> mData;
 
-    public DeviceListAdapter(Context context) {
+    public FriendsDevicesListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
     }
 
-    public void setData(List<BluetoothDevice> data) {
+    public void setData(RealmResults<FriendDevice> data) {
         mData = data;
-    }
-
-    public void setListener(OnPairButtonClickListener listener) {
-        mListener = listener;
     }
 
     public int getCount() {
@@ -46,32 +36,22 @@ public class DeviceListAdapter extends BaseAdapter {
         ViewHolder holder;
 
         if (convertView == null) {
-            convertView =  mInflater.inflate(R.layout.list_item_device, null);
+            convertView =  mInflater.inflate(R.layout.friend_device_item, null);
 
             holder = new ViewHolder();
 
             holder.nameTv = (TextView) convertView.findViewById(R.id.tv_name);
             holder.addressTv = (TextView) convertView.findViewById(R.id.tv_address);
-            holder.pairBtn = (Button) convertView.findViewById(R.id.btn_pair);
 
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        BluetoothDevice device	= mData.get(position);
+        FriendDevice device	= mData.get(position);
 
         holder.nameTv.setText(device.getName());
-        holder.addressTv.setText(device.getAddress());
-        holder.pairBtn.setVisibility((device.getBondState() == BluetoothDevice.BOND_BONDED) ? View.GONE : View.VISIBLE);
-        holder.pairBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onPairButtonClick(position);
-                }
-            }
-        });
+        holder.addressTv.setText(device.getMacAddress());
 
         return convertView;
     }
@@ -79,6 +59,6 @@ public class DeviceListAdapter extends BaseAdapter {
     static class ViewHolder {
         TextView nameTv;
         TextView addressTv;
-        TextView pairBtn;
     }
 }
+
