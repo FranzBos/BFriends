@@ -7,11 +7,17 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 public class AddFriendActivity extends AppCompatActivity implements BluetoothServiceCallback, OnPairButtonClickListener {
 
@@ -19,6 +25,7 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     private ArrayList<BluetoothDevice> mDeviceList;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothService service;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +33,9 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
         setContentView(R.layout.activity_add_friend);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        service = new BluetoothService(this);
+
+        realm = new RealmDatabase(this).getInstance();
 
         mDeviceList = new ArrayList<>();
         ListView mListView = (ListView) findViewById(R.id.lv_paired);
@@ -34,7 +44,7 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
         mAdapter.setListener(this);
         mListView.setAdapter(mAdapter);
 
-        service = new BluetoothService(this);
+        RealmResults<FriendDevice> friends = realm.where(FriendDevice.class).findAll();
 
         registerReceiver(service, getDiscoveryIntentFilter());
         registerReceiver(service, getPairingIntentFilter());
@@ -95,9 +105,13 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     }
 
     @Override
-    public void onDevicePaired() {
+    public void onDevicePaired(BluetoothDevice device) {
         showToast("Paired");
         mAdapter.notifyDataSetChanged();
+        realm.beginTransaction();
+        FriendDevice friendDevice = new FriendDevice(device.getName(), device.getAddress());
+        realm.copyToRealm(friendDevice);
+        realm.commitTransaction();
     }
 
     @Override

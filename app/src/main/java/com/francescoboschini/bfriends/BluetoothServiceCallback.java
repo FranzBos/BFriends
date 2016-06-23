@@ -7,6 +7,6 @@ public interface BluetoothServiceCallback {
     void onDiscoveryStarted();
     void onDeviceFound(BluetoothDevice device);
     void onDiscoveryFinished();
-    void onDevicePaired();
+    void onDevicePaired(BluetoothDevice device);
     void onDeviceUnpaired();
 }

@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import java.lang.reflect.Method;
 
@@ -32,7 +33,9 @@ public class BluetoothService extends BroadcastReceiver {
             int prevState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
 
             if (isPaired(state, prevState)) {
-                callback.onDevicePaired();
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                callback.onDevicePaired(device);
+                Log.d("PAIRED", "Paired : " + device.getAddress());
             } else if (isUnpaired(state, prevState)) {
                 callback.onDeviceUnpaired();
             }
