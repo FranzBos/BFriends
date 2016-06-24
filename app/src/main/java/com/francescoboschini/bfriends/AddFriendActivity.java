@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.francescoboschini.bfriends.BluetoothService.Bluetooth;
 import com.francescoboschini.bfriends.BluetoothService.DiscoveryServiceCallback;
 import com.francescoboschini.bfriends.BluetoothService.DiscoveringService;
 
@@ -35,7 +36,7 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter = new Bluetooth(this).getBluetoothAdapter();
         service = new DiscoveringService(this);
 
         realm = new RealmDatabase(this).getInstance();

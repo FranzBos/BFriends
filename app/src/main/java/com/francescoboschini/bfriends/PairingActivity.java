@@ -10,10 +10,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.francescoboschini.bfriends.BluetoothService.Bluetooth;
 import com.francescoboschini.bfriends.BluetoothService.PairingService;
 import com.francescoboschini.bfriends.BluetoothService.PairingServiceCallback;
 
-public class PairingActivity extends AppCompatActivity implements PairingServiceCallback{
+public class PairingActivity extends AppCompatActivity implements PairingServiceCallback {
 
     private BluetoothAdapter bluetoothAdapter;
     private PairingService service;
@@ -26,7 +27,7 @@ public class PairingActivity extends AppCompatActivity implements PairingService
 
         BluetoothDevice device = getIntent().getParcelableExtra(DEVICE_TO_BE_PAIRED);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter = new Bluetooth(this).getBluetoothAdapter();
         service = new PairingService(this);
 
         registerReceiver(service, getPairingIntentFilter());
