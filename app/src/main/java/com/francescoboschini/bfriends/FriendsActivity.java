@@ -14,6 +14,8 @@ import io.realm.RealmResults;
 
 public class FriendsActivity extends AppCompatActivity {
 
+    private FriendsDevicesListAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,13 +27,13 @@ public class FriendsActivity extends AppCompatActivity {
         Realm realm = new RealmDatabase(this).getInstance();
 
         ListView mListView = (ListView) findViewById(R.id.friends_list_view);
-        FriendsDevicesListAdapter mAdapter = new FriendsDevicesListAdapter(this);
+        adapter = new FriendsDevicesListAdapter(this);
 
         RealmResults<FriendDevice> devices = realm.where(FriendDevice.class).findAll();
         Log.d("DEVICES", String.valueOf(devices));
-        mAdapter.setData(devices);
+        adapter.setData(devices);
 
-        mListView.setAdapter(mAdapter);
+        mListView.setAdapter(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -41,5 +43,11 @@ public class FriendsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        adapter.notifyDataSetChanged();
     }
 }

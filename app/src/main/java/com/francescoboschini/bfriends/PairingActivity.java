@@ -58,6 +58,12 @@ public class PairingActivity extends AppCompatActivity implements PairingService
     }
 
     @Override
+    public void onDestroy() {
+        unregisterReceiver(service);
+        super.onDestroy();
+    }
+
+    @Override
     public void onPause() {
         if (bluetoothAdapter != null) {
             if (bluetoothAdapter.isDiscovering()) {

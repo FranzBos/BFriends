@@ -151,7 +151,7 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
         mAdapter.notifyDataSetChanged();
         realm.beginTransaction();
         FriendDevice friendDevice = new FriendDevice(device.getName(), device.getAddress());
-        realm.copyToRealm(friendDevice);
+        realm.copyToRealmOrUpdate(friendDevice);
         realm.commitTransaction();
     }
 }

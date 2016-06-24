@@ -1,9 +1,11 @@
 package com.francescoboschini.bfriends;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 public class FriendDevice extends RealmObject {
     private String name;
+    @PrimaryKey
     private String macAddress;
 
     public FriendDevice() {
