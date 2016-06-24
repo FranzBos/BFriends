@@ -1,30 +1,33 @@
 package com.francescoboschini.bfriends;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.francescoboschini.bfriends.BluetoothService.DiscoveryServiceCallback;
+import com.francescoboschini.bfriends.BluetoothService.DiscoveringService;
+
 import java.util.ArrayList;
-import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 
-public class AddFriendActivity extends AppCompatActivity implements BluetoothServiceCallback, OnPairButtonClickListener {
+public class AddFriendActivity extends AppCompatActivity implements DiscoveryServiceCallback, OnPairButtonClickListener {
 
+    public static final int REQUEST_CODE = 87;
+    public static final String DEVICE_TO_BE_PAIRED = "device_to_be_paired";
     private DeviceListAdapter mAdapter;
     private ArrayList<BluetoothDevice> mDeviceList;
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothService service;
+    private DiscoveringService service;
     private Realm realm;
 
     @Override
@@ -33,7 +36,7 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
         setContentView(R.layout.activity_add_friend);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        service = new BluetoothService(this);
+        service = new DiscoveringService(this);
 
         realm = new RealmDatabase(this).getInstance();
 
@@ -103,29 +106,14 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
     }
 
     @Override
-    public void onDevicePaired(BluetoothDevice device) {
-        showToast("Paired");
-        mAdapter.notifyDataSetChanged();
-        realm.beginTransaction();
-        FriendDevice friendDevice = new FriendDevice(device.getName(), device.getAddress());
-        realm.copyToRealm(friendDevice);
-        realm.commitTransaction();
-    }
-
-    @Override
-    public void onDeviceUnpaired() {
-        showToast("Unpaired");
-        mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
     public void onPairButtonClick(int position) {
         BluetoothDevice device = mDeviceList.get(position);
         if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
             service.unpairDevice(device);
         } else {
-            showToast("Pairing...");
-            service.pairDevice(device);
+            Intent intent = new Intent(this, PairingActivity.class);
+            intent.putExtra(DEVICE_TO_BE_PAIRED, device);
+            startActivityForResult(intent, REQUEST_CODE);
         }
     }
 
@@ -142,5 +130,28 @@ public class AddFriendActivity extends AppCompatActivity implements BluetoothSer
 
     public void restartDiscovering(View view) {
         bluetoothAdapter.startDiscovery();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                BluetoothDevice result = data.getParcelableExtra("result");
+                showToast("RESULT " + result.getAddress());
+                mAdapter.notifyDataSetChanged();
+                saveDeviceToDatabase(result);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+            }
+        }
+    }
+
+    public void saveDeviceToDatabase(BluetoothDevice device) {
+        mAdapter.notifyDataSetChanged();
+        realm.beginTransaction();
+        FriendDevice friendDevice = new FriendDevice(device.getName(), device.getAddress());
+        realm.copyToRealm(friendDevice);
+        realm.commitTransaction();
     }
 }
