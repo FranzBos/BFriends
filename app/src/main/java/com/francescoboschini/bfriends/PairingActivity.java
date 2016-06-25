@@ -11,14 +11,15 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.francescoboschini.bfriends.BluetoothService.Bluetooth;
-import com.francescoboschini.bfriends.BluetoothService.PairingService;
-import com.francescoboschini.bfriends.BluetoothService.PairingServiceCallback;
+import com.francescoboschini.bfriends.BluetoothService.PairingService.PairingService;
+import com.francescoboschini.bfriends.BluetoothService.PairingService.PairingServiceCallback;
 
 public class PairingActivity extends AppCompatActivity implements PairingServiceCallback {
 
-    private BluetoothAdapter bluetoothAdapter;
     private PairingService service;
+    private BluetoothAdapter bluetoothAdapter;
     public static final String DEVICE_TO_BE_PAIRED = "device_to_be_paired";
+    public static final String DEVICE_PAIRED_RESULT = "device_paired_result";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,24 +45,13 @@ public class PairingActivity extends AppCompatActivity implements PairingService
     public void onDevicePaired(BluetoothDevice device) {
         showToast("Paired");
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("result", device);
+        returnIntent.putExtra(DEVICE_PAIRED_RESULT, device);
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
     }
 
-    @Override
-    public void onDeviceUnpaired() {
-
-    }
-
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDestroy() {
-        unregisterReceiver(service);
-        super.onDestroy();
     }
 
     @Override
@@ -72,5 +62,11 @@ public class PairingActivity extends AppCompatActivity implements PairingService
             }
         }
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(service);
+        super.onDestroy();
     }
 }

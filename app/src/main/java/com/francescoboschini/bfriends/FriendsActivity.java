@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import com.francescoboschini.bfriends.Realm.RealmDatabase;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -21,7 +23,6 @@ public class FriendsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Friends");
         setSupportActionBar(toolbar);
 
         Realm realm = new RealmDatabase(this).getInstance();
@@ -30,7 +31,7 @@ public class FriendsActivity extends AppCompatActivity {
         adapter = new FriendsDevicesListAdapter(this);
 
         RealmResults<FriendDevice> devices = realm.where(FriendDevice.class).findAll();
-        Log.d("DEVICES", String.valueOf(devices));
+        Log.d("DEVICES ", String.valueOf(devices));
         adapter.setData(devices);
 
         mListView.setAdapter(adapter);

@@ -9,13 +9,15 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.francescoboschini.bfriends.BluetoothService.Bluetooth;
-import com.francescoboschini.bfriends.BluetoothService.DiscoveryServiceCallback;
-import com.francescoboschini.bfriends.BluetoothService.DiscoveringService;
+import com.francescoboschini.bfriends.BluetoothService.Discovery.DiscoveringService;
+import com.francescoboschini.bfriends.BluetoothService.Discovery.DiscoveryServiceCallback;
+import com.francescoboschini.bfriends.Realm.RealmDatabase;
 
 import java.util.ArrayList;
 
@@ -25,8 +27,9 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
 
     public static final int REQUEST_CODE = 87;
     public static final String DEVICE_TO_BE_PAIRED = "device_to_be_paired";
-    private DeviceListAdapter mAdapter;
-    private ArrayList<BluetoothDevice> mDeviceList;
+    public static final String DEVICE_PAIRED_RESULT = "device_paired_result";
+    private DeviceListAdapter listAdapter;
+    private ArrayList<BluetoothDevice> devicesList;
     private BluetoothAdapter bluetoothAdapter;
     private DiscoveringService service;
     private Realm realm;
@@ -35,18 +38,20 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         bluetoothAdapter = new Bluetooth(this).getBluetoothAdapter();
         service = new DiscoveringService(this);
 
         realm = new RealmDatabase(this).getInstance();
 
-        mDeviceList = new ArrayList<>();
+        devicesList = new ArrayList<>();
         ListView mListView = (ListView) findViewById(R.id.lv_paired);
-        mAdapter = new DeviceListAdapter(this);
-        mAdapter.setData(mDeviceList);
-        mAdapter.setListener(this);
-        mListView.setAdapter(mAdapter);
+        listAdapter = new DeviceListAdapter(this);
+        listAdapter.setData(devicesList);
+        listAdapter.setListener(this);
+        mListView.setAdapter(listAdapter);
 
         registerReceiver(service, getDiscoveryIntentFilter());
         registerReceiver(service, getPairingIntentFilter());
@@ -68,9 +73,18 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
     }
 
     @Override
-    public void onDestroy() {
-        unregisterReceiver(service);
-        super.onDestroy();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                BluetoothDevice result = data.getParcelableExtra(DEVICE_PAIRED_RESULT);
+                showToast("RESULT " + result.getAddress());
+                listAdapter.notifyDataSetChanged();
+                saveDeviceToDatabase(result);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+            }
+        }
     }
 
     @Override
@@ -83,39 +97,29 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
         super.onPause();
     }
 
-    private void showToast(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(service);
+        super.onDestroy();
     }
 
     @Override
     public void onDiscoveryStarted() {
         showToast("DISCOVERY STARTED");
-        mDeviceList.clear();
+        devicesList.clear();
     }
 
     @Override
     public void onDeviceFound(BluetoothDevice device) {
-        mDeviceList.add(device);
-        mAdapter.notifyDataSetChanged();
-        mAdapter.setData(mDeviceList);
-        showToast("Found device " + device.getName());
+        devicesList.add(device);
+        listAdapter.notifyDataSetChanged();
+        listAdapter.setData(devicesList);
+        showToast("Found device: " + device.getName());
     }
 
     @Override
     public void onDiscoveryFinished() {
         showToast("DISCOVERY FINISHED");
-    }
-
-    @Override
-    public void onPairButtonClick(int position) {
-        BluetoothDevice device = mDeviceList.get(position);
-        if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-            service.unpairDevice(device);
-        } else {
-            Intent intent = new Intent(this, PairingActivity.class);
-            intent.putExtra(DEVICE_TO_BE_PAIRED, device);
-            startActivityForResult(intent, REQUEST_CODE);
-        }
     }
 
     @Override
@@ -129,30 +133,28 @@ public class AddFriendActivity extends AppCompatActivity implements DiscoverySer
         super.onConfigurationChanged(newConfig);
     }
 
+    @Override
+    public void onPairButtonClick(int position) {
+        BluetoothDevice device = devicesList.get(position);
+        Intent intent = new Intent(this, PairingActivity.class);
+        intent.putExtra(DEVICE_TO_BE_PAIRED, device);
+        startActivityForResult(intent, REQUEST_CODE);
+
+    }
+
     public void restartDiscovering(View view) {
         bluetoothAdapter.startDiscovery();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                BluetoothDevice result = data.getParcelableExtra("result");
-                showToast("RESULT " + result.getAddress());
-                mAdapter.notifyDataSetChanged();
-                saveDeviceToDatabase(result);
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-            }
-        }
-    }
-
     public void saveDeviceToDatabase(BluetoothDevice device) {
-        mAdapter.notifyDataSetChanged();
+        listAdapter.notifyDataSetChanged();
         realm.beginTransaction();
         FriendDevice friendDevice = new FriendDevice(device.getName(), device.getAddress());
         realm.copyToRealmOrUpdate(friendDevice);
         realm.commitTransaction();
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

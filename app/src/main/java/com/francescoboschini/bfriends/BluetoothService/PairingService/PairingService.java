@@ -1,4 +1,4 @@
-package com.francescoboschini.bfriends.BluetoothService;
+package com.francescoboschini.bfriends.BluetoothService.PairingService;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -12,6 +12,7 @@ public class PairingService extends BroadcastReceiver {
 
     PairingServiceCallback callback;
     public static final String CREATE_BOND_METHOD = "createBond";
+    public static final String REMOVE_BOND_METHOD = "removeBond";
 
     public PairingService(PairingServiceCallback callback) {
         this.callback = callback;
@@ -27,18 +28,8 @@ public class PairingService extends BroadcastReceiver {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 callback.onDevicePaired(device);
                 Log.d("PAIRED", "Paired : " + device.getAddress());
-            } else if (isUnpaired(state, prevState)) {
-                callback.onDeviceUnpaired();
             }
         }
-    }
-
-    private boolean isUnpaired(int state, int prevState) {
-        return state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED;
-    }
-
-    private boolean isPaired(int state, int prevState) {
-        return state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING;
     }
 
     public void pairDevice(BluetoothDevice device) {
@@ -48,5 +39,22 @@ public class PairingService extends BroadcastReceiver {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void unpairDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod(REMOVE_BOND_METHOD, (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isPaired(int state, int prevState) {
+        return state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING;
+    }
+
+    private boolean isUnpaired(int state, int prevState) {
+        return state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED;
     }
 }

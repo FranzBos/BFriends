@@ -1,4 +1,4 @@
-package com.francescoboschini.bfriends;
+package com.francescoboschini.bfriends.Realm;
 
 import android.content.Context;
 

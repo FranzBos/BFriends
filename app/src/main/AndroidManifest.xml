@@ -13,18 +13,18 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".AddFriendActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".FriendsActivity"
             android:label="@string/title_activity_friends"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PairingActivity"></activity>
+        <activity android:name=".PairingActivity" />
     </application>
 
 </manifest>
