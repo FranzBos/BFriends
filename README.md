@@ -1,4 +1,4 @@
 # BFriends
 
 Android app for connecting with friends through bluetooth.
-Prove that you are freinds pairing your devices!
+Prove that you are friends pairing your devices!
